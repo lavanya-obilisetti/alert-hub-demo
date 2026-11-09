@@ -1,0 +1,14 @@
+[
+  {"signature":"web-01:cpu_high","title":"High CPU: find top processes and act"},
+  {"signature":"web-02:cpu_high","title":"High CPU: find top processes and act"},
+  {"signature":"db-02:swap_high","title":"Swap exhaustion: identify and relieve memory pressure"},
+  {"signature":"db-01:tablespace_90","title":"Tablespace growth: extend and review"},
+  {"signature":"app-03:disk_85","title":"Disk space: clean up or extend the file system"},
+  {"signature":"api:http_down","title":"HTTP check failing: verify service, then escalate"},
+  {"signature":"batch-01:svc_down","title":"Service stopped: restart and verify"},
+  {"signature":"stg-web-01:mem_high","title":"Memory pressure on staging"},
+  {"signature":"db-03:replication_lag","title":null},
+  {"signature":"cache-01:latency_high","title":null},
+  {"signature":"dev-api-01:cert_expiry","title":null},
+  {"signature":"batch-01:cpu_high","title":"High CPU: find top processes and act"}
+]

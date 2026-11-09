@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Alert Hub (demo)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  color-scheme:light;
+  --bg:#EDF0F5; --surface:#FFFFFF; --ink:#111827; --muted:#5B6577; --line:#D9DEE8; --soft:#F3F5F9;
+  --accent:#2457D6; --crit:#C42B1C; --crit-bg:#FCEBE8; --warn:#A55A00; --warn-bg:#FCF1DF; --ok:#1B7F4B; --ok-bg:#E3F4EB;
+  --font:'IBM Plex Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SF Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    color-scheme:dark;
+    --bg:#0E1118; --surface:#161A23; --ink:#E8ECF4; --muted:#98A2B3; --line:#262C3A; --soft:#1C212C;
+    --accent:#7AA2FF; --crit:#FF8272; --crit-bg:#2B1613; --warn:#F0A856; --warn-bg:#2A2012; --ok:#5FD39A; --ok-bg:#112A1E;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;
+  padding:calc(18px + env(safe-area-inset-top,0px)) 20px calc(40px + env(safe-area-inset-bottom,0px))}
+.wrap{max-width:1360px;margin-inline:auto;display:flex;flex-direction:column;gap:16px}
+button,select{font:inherit;color:inherit}
+h1{font-size:26px;font-weight:700;letter-spacing:-.01em;margin:0;line-height:1.1}
+h2{font-size:16px;font-weight:600;margin:0}
+.sub{color:var(--muted);margin-top:4px;max-width:70ch}
+.banner{background:var(--warn-bg);color:var(--warn);border:1px solid var(--warn);border-radius:8px;padding:8px 12px;font-size:13px}
+.hdr{display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between;padding-bottom:12px;border-bottom:2px solid var(--accent)}
+.ctl{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.live{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:12px;color:var(--muted)}
+.pulse{width:9px;height:9px;border-radius:50%;background:var(--ok);animation:pulse 2s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(27,127,75,.5)}70%{box-shadow:0 0 0 7px rgba(27,127,75,0)}100%{box-shadow:0 0 0 0 rgba(27,127,75,0)}}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+.btn{border:1px solid var(--line);background:var(--surface);padding:6px 12px;border-radius:6px;cursor:pointer;font-weight:500}
+.btn:hover{border-color:var(--accent)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:6px;overflow:hidden;background:var(--surface)}
+.seg button{border:0;background:transparent;padding:6px 12px;cursor:pointer;font-weight:500}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+select{border:1px solid var(--line);background:var(--surface);padding:6px 8px;border-radius:6px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.kpi .l{font-size:13px;color:var(--muted);font-weight:500}
+.kpi .v{font-size:36px;font-weight:600;letter-spacing:-.02em;line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi .n{color:var(--muted);font-size:12px}
+.kpi.bad .v{color:var(--crit)} .kpi.good .v{color:var(--ok)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:3px 11px;font-size:12px}
+.chip i{width:8px;height:8px;border-radius:50%;background:var(--ok);flex:none}
+.chip.has i{background:var(--warn)} .chip.crit i{background:var(--crit)}
+.chip b{font-variant-numeric:tabular-nums}
+.grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:16px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.ph span{color:var(--muted);font-size:12px}
+.row{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:6px 18px;padding:14px 16px;border-bottom:1px solid var(--line);border-left:4px solid var(--line)}
+.row:last-child{border-bottom:0}
+.row.critical{border-left-color:var(--crit)} .row.warning{border-left-color:var(--warn)} .row.info{border-left-color:var(--accent)}
+.row.over{background:var(--crit-bg)}
+.age{font-family:var(--mono)}
+.age strong{font-size:20px;font-weight:500;display:block;line-height:1.1}
+.age small{color:var(--muted);font-size:12px}
+.bar{height:4px;border-radius:2px;background:var(--soft);margin-top:6px;overflow:hidden}
+.bar>div{height:100%;background:var(--accent)} .over .bar>div{background:var(--crit)}
+.title{font-weight:600}
+.meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tag{font-size:12px;border:1px solid var(--line);background:var(--soft);border-radius:4px;padding:1px 7px}
+.tag.crit{color:var(--crit);border-color:var(--crit);background:var(--crit-bg)}
+.tag.warn{color:var(--warn);border-color:var(--warn);background:var(--warn-bg)}
+.tag.ok{color:var(--ok);border-color:var(--ok);background:var(--ok-bg)}
+.who{text-align:right;font-size:12px;color:var(--muted)}
+.who b{display:block;color:var(--ink);font-size:14px;font-weight:600}
+.empty{padding:28px 16px;color:var(--muted)}
+.list{list-style:none;margin:0;padding:0}
+.list li{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px}
+.list li:last-child{border-bottom:0}
+.list small{color:var(--muted);display:block}
+.side{display:flex;flex-direction:column;gap:16px}
+.toggle{width:100%;text-align:left;border:0;background:var(--soft);padding:10px 16px;cursor:pointer;font-weight:500;border-top:1px solid var(--line)}
+.toggle:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.foot{color:var(--muted);font-size:12px}
+@media (max-width:640px){.row{grid-template-columns:1fr}.who{text-align:left}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="banner" role="note">Demo with simulated data only. No real alerts, hosts, tickets or company information.</div>
+  <header class="hdr">
+    <div>
+      <h1>Alert Hub</h1>
+      <div class="sub">Alerts from metrics, uptime, cloud, database, email and chat channels in one view, sorted into real incidents, repeats and planned maintenance.</div>
+    </div>
+    <div class="ctl">
+      <span class="live"><span class="pulse" aria-hidden="true"></span><span id="liveText">Live</span></span>
+      <div class="seg" role="group" aria-label="Environment filter">
+        <button id="envProd" aria-pressed="true">Prod only</button>
+        <button id="envAll" aria-pressed="false">All environments</button>
+      </div>
+      <label class="sr" for="tool" style="position:absolute;left:-9999px">Filter by source</label>
+      <select id="tool"></select>
+      <button class="btn pri" id="refresh">Refresh now</button>
+    </div>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="Summary"></section>
+  <section class="chips" id="chips" aria-label="Alert sources"></section>
+
+  <div class="grid">
+    <section class="panel" aria-labelledby="needsH">
+      <div class="ph"><h2 id="needsH">Needs attention</h2><span id="needsMeta"></span></div>
+      <div id="needs"></div>
+      <button class="toggle" id="toggleSup" aria-expanded="false"></button>
+      <div id="suppressed" hidden></div>
+    </section>
+
+    <aside class="side">
+      <section class="panel" aria-labelledby="qH">
+        <div class="ph"><h2 id="qH">Unassigned tickets</h2><span id="qMeta"></span></div>
+        <ul class="list" id="queue"></ul>
+      </section>
+      <section class="panel" aria-labelledby="rbH">
+        <div class="ph"><h2 id="rbH">Runbook coverage</h2><span id="rbMeta"></span></div>
+        <ul class="list" id="runbooks"></ul>
+      </section>
+      <section class="panel" aria-labelledby="wH">
+        <div class="ph"><h2 id="wH">Planned maintenance</h2><span id="wMeta"></span></div>
+        <ul class="list" id="windows"></ul>
+      </section>
+    </aside>
+  </div>
+  <div class="foot">Triage rules: planned maintenance if the host is inside a maintenance window; known repeat if the same alert has a past ticket; otherwise a new incident. The response target is 60 minutes.</div>
+</div>
+
+<script>
+const DATA = {
+ "alerts": [
+  {
+   "id": "A-101",
+   "source": "Metrics platform",
+   "channel": "api",
+   "severity": "warning",
+   "env": "prod",
+   "host": "web-01",
+   "check": "cpu_high",
+   "title": "CPU usage above 90 percent on web-01",
+   "minutes_ago": 12,
+   "signature": "web-01:cpu_high",
+   "ticket": null
+  },
+  {
+   "id": "A-102",
+   "source": "Cloud monitor",
+   "channel": "email",
+   "severity": "critical",
+   "env": "prod",
+   "host": "db-02",
+   "check": "swap_high",
+   "title": "Swap utilization at 100 percent on db-02",
+   "minutes_ago": 47,
+   "signature": "db-02:swap_high",
+   "ticket": null
+  },
+  {
+   "id": "A-103",
+   "source": "Uptime checker",
+   "channel": "webhook",
+   "severity": "critical",
+   "env": "prod",
+   "host": "api.example.test",
+   "check": "http_down",
+   "title": "HTTP check failing for api.example.test",
+   "minutes_ago": 5,
+   "signature": "api:http_down",
+   "ticket": null
+  },
+  {
+   "id": "A-104",
+   "source": "Database monitor",
+   "channel": "email",
+   "severity": "warning",
+   "env": "prod",
+   "host": "db-01",
+   "check": "tablespace_90",
+   "title": "Tablespace usage above 90 percent on db-01",
+   "minutes_ago": 33,
+   "signature": "db-01:tablespace_90",
+   "ticket": null
+  },
+  {
+   "id": "A-105",
+   "source": "Email alerts",
+   "channel": "email",
+   "severity": "warning",
+   "env": "prod",
+   "host": "app-03",
+   "check": "disk_85",
+   "title": "Disk usage above 85 percent on /var of app-03",
+   "minutes_ago": 21,
+   "signature": "app-03:disk_85",
+   "ticket": null
+  },
+  {
+   "id": "A-106",
+   "source": "Metrics platform",
+   "channel": "api",
+   "severity": "info",
+   "env": "staging",
+   "host": "stg-web-01",
+   "check": "mem_high",
+   "title": "Memory usage above 80 percent on stg-web-01",
+   "minutes_ago": 64,
+   "signature": "stg-web-01:mem_high",
+   "ticket": null
+  },
+  {
+   "id": "A-107",
+   "source": "Cloud monitor",
+   "channel": "email",
+   "severity": "warning",
+   "env": "prod",
+   "host": "batch-01",
+   "check": "cpu_high",
+   "title": "CPU usage above 90 percent on batch-01",
+   "minutes_ago": 18,
+   "signature": "batch-01:cpu_high",
+   "ticket": null
+  },
+  {
+   "id": "A-108",
+   "source": "Email alerts",
+   "channel": "email",
+   "severity": "critical",
+   "env": "prod",
+   "host": "batch-01",
+   "check": "svc_down",
+   "title": "Service batch-runner stopped on batch-01",
+   "minutes_ago": 15,
+   "signature": "batch-01:svc_down",
+   "ticket": null
+  },
+  {
+   "id": "A-109",
+   "source": "Chat channels",
+   "channel": "chat",
+   "severity": "warning",
+   "env": "prod",
+   "host": "cache-01",
+   "check": "latency_high",
+   "title": "Cache latency above 50 ms on cache-01",
+   "minutes_ago": 8,
+   "signature": "cache-01:latency_high",
+   "ticket": null
+  },
+  {
+   "id": "A-110",
+   "source": "Uptime checker",
+   "channel": "webhook",
+   "severity": "info",
+   "env": "dev",
+   "host": "dev-api-01",
+   "check": "cert_expiry",
+   "title": "TLS certificate expires in 14 days on dev-api-01",
+   "minutes_ago": 120,
+   "signature": "dev-api-01:cert_expiry",
+   "ticket": null
+  },
+  {
+   "id": "A-111",
+   "source": "Database monitor",
+   "channel": "email",
+   "severity": "critical",
+   "env": "prod",
+   "host": "db-03",
+   "check": "replication_lag",
+   "title": "Replication lag above 300 seconds on db-03",
+   "minutes_ago": 71,
+   "signature": "db-03:replication_lag",
+   "ticket": "T-3003"
+  },
+  {
+   "id": "A-112",
+   "source": "Metrics platform",
+   "channel": "api",
+   "severity": "warning",
+   "env": "prod",
+   "host": "web-02",
+   "check": "cpu_high",
+   "title": "CPU usage above 90 percent on web-02",
+   "minutes_ago": 26,
+   "signature": "web-02:cpu_high",
+   "ticket": "T-3005"
+  }
+ ],
+ "tickets": [
+  {
+   "id": "T-2001",
+   "signature": "db-02:swap_high",
+   "summary": "Swap at 100 percent on db-02",
+   "status": "closed",
+   "assignee": "engineer-a",
+   "resolution": "Restarted a memory-heavy job; swap cleared",
+   "days_ago": 9
+  },
+  {
+   "id": "T-2002",
+   "signature": "db-02:swap_high",
+   "summary": "Swap at 100 percent on db-02",
+   "status": "closed",
+   "assignee": "engineer-b",
+   "resolution": "Cleared cache and restarted the job",
+   "days_ago": 21
+  },
+  {
+   "id": "T-2003",
+   "signature": "db-02:swap_high",
+   "summary": "Swap at 100 percent on db-02",
+   "status": "closed",
+   "assignee": "engineer-a",
+   "resolution": "Resized swap; recommended a memory review",
+   "days_ago": 35
+  },
+  {
+   "id": "T-2010",
+   "signature": "db-01:tablespace_90",
+   "summary": "Tablespace above 90 percent on db-01",
+   "status": "closed",
+   "assignee": "engineer-c",
+   "resolution": "Extended the tablespace by 20 percent",
+   "days_ago": 14
+  },
+  {
+   "id": "T-2020",
+   "signature": "web-02:cpu_high",
+   "summary": "Brief CPU spike on web-02",
+   "status": "closed",
+   "assignee": "engineer-b",
+   "resolution": "Traffic burst; no action needed",
+   "days_ago": 40
+  },
+  {
+   "id": "T-3001",
+   "signature": "dev-api-01:cert_expiry",
+   "summary": "Renew certificate on dev-api-01",
+   "status": "open",
+   "assignee": null,
+   "resolution": null,
+   "days_ago": 2
+  },
+  {
+   "id": "T-3002",
+   "signature": "app-03:disk_85",
+   "summary": "Disk cleanup request on app-03",
+   "status": "open",
+   "assignee": null,
+   "resolution": null,
+   "days_ago": 1
+  },
+  {
+   "id": "T-3003",
+   "signature": "db-03:replication_lag",
+   "summary": "Investigate replication lag on db-03",
+   "status": "open",
+   "assignee": null,
+   "resolution": null,
+   "days_ago": 0
+  },
+  {
+   "id": "T-3004",
+   "signature": "cache-01:latency_high",
+   "summary": "Add a runbook for cache latency",
+   "status": "open",
+   "assignee": null,
+   "resolution": null,
+   "days_ago": 3
+  },
+  {
+   "id": "T-3005",
+   "signature": "web-02:cpu_high",
+   "summary": "Check CPU trend on web-02",
+   "status": "open",
+   "assignee": "engineer-c",
+   "resolution": null,
+   "days_ago": 0
+  }
+ ],
+ "windows": [
+  {
+   "id": "W-1",
+   "hosts": [
+    "batch-01"
+   ],
+   "reason": "Monthly patching",
+   "start_offset_min": -45,
+   "end_offset_min": 75
+  }
+ ],
+ "runbooks": [
+  {
+   "signature": "web-01:cpu_high",
+   "title": "High CPU: find top processes and act"
+  },
+  {
+   "signature": "web-02:cpu_high",
+   "title": "High CPU: find top processes and act"
+  },
+  {
+   "signature": "db-02:swap_high",
+   "title": "Swap exhaustion: identify and relieve memory pressure"
+  },
+  {
+   "signature": "db-01:tablespace_90",
+   "title": "Tablespace growth: extend and review"
+  },
+  {
+   "signature": "app-03:disk_85",
+   "title": "Disk space: clean up or extend the file system"
+  },
+  {
+   "signature": "api:http_down",
+   "title": "HTTP check failing: verify service, then escalate"
+  },
+  {
+   "signature": "batch-01:svc_down",
+   "title": "Service stopped: restart and verify"
+  },
+  {
+   "signature": "stg-web-01:mem_high",
+   "title": "Memory pressure on staging"
+  },
+  {
+   "signature": "db-03:replication_lag",
+   "title": null
+  },
+  {
+   "signature": "cache-01:latency_high",
+   "title": null
+  },
+  {
+   "signature": "dev-api-01:cert_expiry",
+   "title": null
+  },
+  {
+   "signature": "batch-01:cpu_high",
+   "title": "High CPU: find top processes and act"
+  }
+ ]
+};
+const TARGET_MIN = 60, REFRESH_SEC = 60;
+const MIN = 60000;
+const t0 = Date.now();
+
+// ---- state -------------------------------------------------------------
+const state = { env:'prod', tool:'all', showSup:false, next:REFRESH_SEC, updated:new Date() };
+const alerts = DATA.alerts.map(a => ({...a, startedAt: t0 - a.minutes_ago*MIN, open:true}));
+const tickets = DATA.tickets;
+const windows = DATA.windows.map(w => ({...w, start:t0 + w.start_offset_min*MIN, end:t0 + w.end_offset_min*MIN}));
+const runbooks = DATA.runbooks;
+const pool = [
+  {source:'Metrics platform',channel:'api',severity:'warning',env:'prod',host:'web-03',check:'cpu_high',title:'CPU usage above 90 percent on web-03',signature:'web-03:cpu_high'},
+  {source:'Cloud monitor',channel:'email',severity:'critical',env:'prod',host:'db-02',check:'swap_high',title:'Swap utilization at 100 percent on db-02',signature:'db-02:swap_high'},
+  {source:'Uptime checker',channel:'webhook',severity:'warning',env:'prod',host:'api.example.test',check:'slow_response',title:'Response time above 2 s for api.example.test',signature:'api:slow_response'},
+  {source:'Chat channels',channel:'chat',severity:'info',env:'staging',host:'stg-web-01',check:'disk_85',title:'Disk usage above 85 percent on stg-web-01',signature:'stg-web-01:disk_85'}
+];
+let seq = 200;
+
+// ---- triage: normalize -> maintenance -> repeat -> new -------------------
+function classify(a, now){
+  const w = windows.find(w => w.hosts.includes(a.host) && now >= w.start && now <= w.end);
+  if (w) return {kind:'maintenance', label:'Planned maintenance', note:w.reason};
+  const past = tickets.filter(t => t.signature === a.signature && t.status === 'closed');
+  if (past.length) return {kind:'repeat', label:'Repeat #' + (past.length + 1), note:past[0].resolution};
+  return {kind:'new', label:'New incident', note:''};
+}
+const hasRunbook = sig => { const r = runbooks.find(r => r.signature === sig); return !!(r && r.title); };
+const ageMin = (a, now) => Math.floor((now - a.startedAt)/MIN);
+
+// ---- helpers -----------------------------------------------------------
+const $ = id => document.getElementById(id);
+function el(tag, cls, text){ const e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined) e.textContent = text; return e; }
+function visible(a){ return a.open && (state.env === 'all' || a.env === 'prod') && (state.tool === 'all' || a.source === state.tool); }
+
+// ---- render ------------------------------------------------------------
+function render(){
+  const now = Date.now();
+  const list = alerts.filter(visible).map(a => ({a, c:classify(a, now), age:ageMin(a, now)}));
+  const active = list.filter(x => x.c.kind !== 'maintenance').sort((x,y) => y.age - x.age);
+  const sup = list.filter(x => x.c.kind === 'maintenance').sort((x,y) => y.age - x.age);
+  const over = active.filter(x => x.age > TARGET_MIN).length;
+  const unassigned = tickets.filter(t => t.status === 'open' && !t.assignee);
+
+  // KPIs
+  const k = $('kpis'); k.replaceChildren();
+  const kpi = (l, v, n, cls) => { const d = el('div','kpi ' + (cls||'')); d.append(el('div','l',l), el('div','v',String(v)), el('div','n',n)); k.append(d); };
+  kpi('Open alerts', active.length, 'fired, no recovery yet', active.length ? '' : 'good');
+  kpi('Open over 60 min', over, over ? 'past the response target' : 'none past the target', over ? 'bad' : 'good');
+  kpi('Suppressed by maintenance', sup.length, 'inside a planned window', '');
+  kpi('Unassigned tickets', unassigned.length, 'waiting for an owner', unassigned.length ? 'bad' : 'good');
+
+  // Source chips (always show every channel so a quiet source is visible)
+  const sources = [...new Set(DATA.alerts.concat(pool).map(a => a.source))];
+  const c = $('chips'); c.replaceChildren();
+  sources.forEach(s => {
+    const items = alerts.filter(a => a.open && a.source === s && (state.env === 'all' || a.env === 'prod'));
+    const crit = items.some(a => a.severity === 'critical');
+    const chip = el('span','chip' + (items.length ? (crit ? ' crit' : ' has') : ''));
+    chip.append(el('i'), document.createTextNode(s + ' '), el('b', '', String(items.length)));
+    c.append(chip);
+  });
+
+  // Tool select (keep selection)
+  const sel = $('tool');
+  if (sel.options.length !== sources.length + 1){
+    sel.replaceChildren(new Option('All sources','all'), ...sources.map(s => new Option(s, s)));
+  }
+  sel.value = state.tool;
+
+  // Needs attention
+  $('needsMeta').textContent = active.length + ' open, oldest first';
+  const n = $('needs'); n.replaceChildren();
+  if (!active.length) n.append(el('div','empty','Nothing needs attention. New alerts from every source will show up here.'));
+  active.forEach(x => n.append(row(x)));
+
+  // Suppressed
+  const tg = $('toggleSup');
+  tg.textContent = (state.showSup ? 'Hide' : 'Show') + ' ' + sup.length + ' suppressed by planned maintenance';
+  tg.setAttribute('aria-expanded', String(state.showSup));
+  const s = $('suppressed'); s.hidden = !state.showSup; s.replaceChildren();
+  sup.forEach(x => s.append(row(x)));
+
+  // Unassigned tickets
+  $('qMeta').textContent = unassigned.length + ' waiting';
+  const q = $('queue'); q.replaceChildren();
+  if (!unassigned.length) q.append(el('li','', 'Every open ticket has an owner.'));
+  unassigned.forEach(t => { const li = el('li'); const d = el('div'); d.append(el('b','',t.id), el('small','',t.summary)); li.append(d, el('small','', t.days_ago ? t.days_ago + 'd old' : 'today')); q.append(li); });
+
+  // Runbook coverage
+  const sigs = [...new Set(alerts.filter(a => a.open).map(a => a.signature))];
+  const covered = sigs.filter(hasRunbook).length;
+  $('rbMeta').textContent = covered + ' of ' + sigs.length + ' covered';
+  const rb = $('runbooks'); rb.replaceChildren();
+  sigs.filter(x => !hasRunbook(x)).forEach(sg => { const li = el('li'); li.append(el('span','',sg), el('span','tag warn','No runbook')); rb.append(li); });
+  if (covered === sigs.length) rb.append(el('li','','Every active alert type has a runbook.'));
+
+  // Windows
+  $('wMeta').textContent = windows.length + ' scheduled';
+  const wl = $('windows'); wl.replaceChildren();
+  windows.forEach(w => { const left = Math.round((w.end - now)/MIN); const li = el('li'); const d = el('div'); d.append(el('b','',w.reason), el('small','',w.hosts.join(', '))); li.append(d, el('small','', left > 0 ? left + ' min left' : 'ended')); wl.append(li); });
+
+  $('liveText').textContent = 'Live, updated ' + state.updated.toLocaleTimeString() + ', next in ' + Math.floor(state.next/60) + ':' + String(state.next%60).padStart(2,'0');
+}
+
+function row(x){
+  const {a, c, age} = x;
+  const left = Math.max(TARGET_MIN - age, 0);
+  const over = c.kind !== 'maintenance' && age > TARGET_MIN;
+  const r = el('div','row ' + a.severity + (over ? ' over' : ''));
+  const ag = el('div','age'); ag.append(el('strong','', age + 'm'), el('small','', c.kind === 'maintenance' ? 'suppressed' : (over ? 'over target' : left + 'm left')));
+  const bar = el('div','bar'); const fill = el('div'); fill.style.width = Math.min(age/TARGET_MIN*100, 100) + '%'; bar.append(fill); ag.append(bar);
+  const mid = el('div'); mid.append(el('div','title', a.title));
+  const meta = el('div','meta');
+  meta.append(el('span','tag', a.source), el('span','tag ' + (a.severity === 'critical' ? 'crit' : a.severity === 'warning' ? 'warn' : ''), a.severity), el('span','tag ' + (c.kind === 'new' ? 'crit' : c.kind === 'repeat' ? 'warn' : 'ok'), c.label), el('span','tag ' + (hasRunbook(a.signature) ? 'ok' : 'warn'), hasRunbook(a.signature) ? 'Runbook found' : 'No runbook'), el('span','tag', a.env));
+  mid.append(meta);
+  if (c.note) mid.append(el('div','foot', c.kind === 'repeat' ? 'Last fix: ' + c.note : 'Reason: ' + c.note));
+  const who = el('div','who'); who.append(el('b','', a.host), document.createTextNode('via ' + a.channel));
+  const tk = el('span','tag ' + (a.ticket ? '' : 'crit'), a.ticket ? a.ticket : 'No ticket yet'); tk.style.marginTop = '6px'; tk.style.display = 'inline-block'; who.append(document.createElement('br'), tk);
+  r.append(ag, mid, who);
+  return r;
+}
+
+// ---- simulated live feed ----------------------------------------------
+function refresh(){
+  const open = alerts.filter(a => a.open && classify(a, Date.now()).kind !== 'maintenance');
+  if (Math.random() < 0.4){
+    const p = pool[Math.floor(Math.random()*pool.length)];
+    if (!alerts.some(a => a.open && a.signature === p.signature)) alerts.push({...p, id:'A-' + (++seq), minutes_ago:0, startedAt:Date.now(), ticket:null, open:true});
+  }
+  if (open.length > 4 && Math.random() < 0.3){ open[Math.floor(Math.random()*open.length)].open = false; }
+  state.updated = new Date(); state.next = REFRESH_SEC; render();
+}
+
+// ---- events ------------------------------------------------------------
+function setEnv(e){ state.env = e; $('envProd').setAttribute('aria-pressed', e === 'prod'); $('envAll').setAttribute('aria-pressed', e === 'all'); render(); }
+$('envProd').onclick = () => setEnv('prod');
+$('envAll').onclick = () => setEnv('all');
+$('tool').onchange = e => { state.tool = e.target.value; render(); };
+$('refresh').onclick = refresh;
+$('toggleSup').onclick = () => { state.showSup = !state.showSup; render(); };
+setInterval(() => { state.next -= 1; if (state.next <= 0) refresh(); else render(); }, 1000);
+render();
+</script>
+</body>
+</html>

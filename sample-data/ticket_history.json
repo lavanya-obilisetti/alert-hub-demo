@@ -1,0 +1,12 @@
+[
+  {"id":"T-2001","signature":"db-02:swap_high","summary":"Swap at 100 percent on db-02","status":"closed","assignee":"engineer-a","resolution":"Restarted a memory-heavy job; swap cleared","days_ago":9},
+  {"id":"T-2002","signature":"db-02:swap_high","summary":"Swap at 100 percent on db-02","status":"closed","assignee":"engineer-b","resolution":"Cleared cache and restarted the job","days_ago":21},
+  {"id":"T-2003","signature":"db-02:swap_high","summary":"Swap at 100 percent on db-02","status":"closed","assignee":"engineer-a","resolution":"Resized swap; recommended a memory review","days_ago":35},
+  {"id":"T-2010","signature":"db-01:tablespace_90","summary":"Tablespace above 90 percent on db-01","status":"closed","assignee":"engineer-c","resolution":"Extended the tablespace by 20 percent","days_ago":14},
+  {"id":"T-2020","signature":"web-02:cpu_high","summary":"Brief CPU spike on web-02","status":"closed","assignee":"engineer-b","resolution":"Traffic burst; no action needed","days_ago":40},
+  {"id":"T-3001","signature":"dev-api-01:cert_expiry","summary":"Renew certificate on dev-api-01","status":"open","assignee":null,"resolution":null,"days_ago":2},
+  {"id":"T-3002","signature":"app-03:disk_85","summary":"Disk cleanup request on app-03","status":"open","assignee":null,"resolution":null,"days_ago":1},
+  {"id":"T-3003","signature":"db-03:replication_lag","summary":"Investigate replication lag on db-03","status":"open","assignee":null,"resolution":null,"days_ago":0},
+  {"id":"T-3004","signature":"cache-01:latency_high","summary":"Add a runbook for cache latency","status":"open","assignee":null,"resolution":null,"days_ago":3},
+  {"id":"T-3005","signature":"web-02:cpu_high","summary":"Check CPU trend on web-02","status":"open","assignee":"engineer-c","resolution":null,"days_ago":0}
+]
